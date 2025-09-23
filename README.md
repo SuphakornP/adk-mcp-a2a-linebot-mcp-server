@@ -28,6 +28,14 @@ Slide: https://speakerdeck.com/punsiriboo/agent-development-kit-adk-x-mcp-x-a2a
     * มี Agent Card (เหมือนเรซูเม่ หรือนามบัตรของ AI Agent) ให้ metadata ของ Agent เรียกใช้งาน
 
 ---
+## To Start 
+```
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+---
 
 ## โครงสร้างโฟลเดอร์
 
