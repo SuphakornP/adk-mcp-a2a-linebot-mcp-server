@@ -7,6 +7,9 @@ Instructor: Punsiri Boonyakiat
 
 ## 📌 เนื้อหาหลัก Agent Development Kit (ADK) x MCP x A2A 🔥🔥
 
+Slide: https://speakerdeck.com/punsiriboo/agent-development-kit-adk-x-mcp-x-a2a
+
+
 1. Introduction to ADK
     * สร้าง AI Agents ด้วย Model, Goal, Instruction, Tools
     * Instruction Prompts คือหัวใจสำคัญ เพราะเป็นตัวกำหนดการทำงานของ AI Agent การเลือกเครื่องมือที่ถูกต้อง การทำงานให้ตรง scope
