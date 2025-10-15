@@ -1,6 +1,10 @@
+import os
+from dotenv import load_dotenv
 from google.adk.agents import Agent
 
-model="gemini-2.0-flash"
+load_dotenv()
+
+model = os.getenv("MODEL_ID", "gemini-2.5-flash")
 
 # ทำสร้าง Function เพื่อให้ AI นำไปเรียกใช้งาน
 def find_menu_items(description: str):
