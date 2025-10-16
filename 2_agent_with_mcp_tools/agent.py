@@ -2,7 +2,19 @@ from google.adk.agents import Agent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, SseConnectionParams
 from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
 from mcp import StdioServerParameters
-import os 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Validate required environment variables for LINE Bot
+CHANNEL_ACCESS_TOKEN = os.getenv("CHANNEL_ACCESS_TOKEN")
+DESTINATION_USER_ID = os.getenv("DESTINATION_USER_ID")
+
+if not CHANNEL_ACCESS_TOKEN or not DESTINATION_USER_ID:
+    print("⚠️  Warning: CHANNEL_ACCESS_TOKEN or DESTINATION_USER_ID not set in .env file")
+    print("LINE Bot MCP toolset will not be available.") 
 
 airbnb_mcp_toolset = MCPToolset(
     connection_params=StdioConnectionParams(
@@ -26,8 +38,8 @@ line_bot_mcp_toolset = MCPToolset(
                 "@line/line-bot-mcp-server",
             ],
             env={
-                "CHANNEL_ACCESS_TOKEN": os.getenv("CHANNEL_ACCESS_TOKEN"),
-                "DESTINATION_USER_ID":  os.getenv("DESTINATION_USER_ID"),
+                "CHANNEL_ACCESS_TOKEN": CHANNEL_ACCESS_TOKEN or "",
+                "DESTINATION_USER_ID": DESTINATION_USER_ID or "",
             },
         ),
     ),
