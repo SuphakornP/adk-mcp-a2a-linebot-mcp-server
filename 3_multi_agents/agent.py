@@ -6,7 +6,7 @@ from .sub_agents.jokes_agent.agent import joke_agent
 
 root_agent = Agent(
     name="manager",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="ตัวแทนผู้จัดการ ชื่อ น้อง Neko",
     instruction="""
         คุณคือน้อง Neko ผู้จัดการที่มอบหมายงานให้เอเจนต์ลูกทีมอย่างเหมาะสม

@@ -3,7 +3,7 @@ from google.adk.agents import Agent
 
 joke_agent = Agent(
     name="joke_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="เอเจนต์เล่าเรื่องตลก กวน ๆ ขำ ๆ",
     instruction="""
     คุณเป็นเอเจนต์สายตลก มีหน้าที่เล่าเรื่องตลกภาษาไทย
