@@ -23,14 +23,14 @@ if not PINECONE_API_KEY:
     exit(1)
 
 # ตั้งค่า Pinecone MCP Toolset
-# ใช้ pinecone-dev-apthai-rag-sandbox MCP server
+# ใช้ Official Pinecone MCP server
 pinecone_mcp_toolset = MCPToolset(
     connection_params=StdioConnectionParams(
         server_params=StdioServerParameters(
             command="npx",
             args=[
                 "-y",
-                "@pinecone-database/mcp-server",
+                "@pinecone-database/mcp",  # ✅ ชื่อ package ที่ถูกต้อง
             ],
             env={
                 "PINECONE_API_KEY": PINECONE_API_KEY,
@@ -53,10 +53,10 @@ agent_instruction_prompt = """
 วิธีการทำงาน:
 1. เมื่อได้รับคำถามจากผู้ใช้ ให้ใช้ search-records tool เพื่อค้นหาข้อมูลที่เกี่ยวข้อง
    - ใช้ index name: "test-rag-integrated"
-   - ใช้ namespace: "__default__"
+   - ใช้ namespace: "" (empty string สำหรับ default namespace)
    - ค้นหา top 5-10 ผลลัพธ์
    - ส่ง query เป็น text โดยตรง (ไม่ต้องสร้าง embedding เอง!)
-   - ตัวอย่าง: search_records(name="test-rag-integrated", namespace="__default__", query={"topK": 5, "inputs": {"text": "คำถามของผู้ใช้"}})
+   - ตัวอย่าง: search_records(name="test-rag-integrated", namespace="", query={"topK": 5, "inputs": {"text": "คำถามของผู้ใช้"}})
    
 2. อ่านและวิเคราะห์ข้อมูลที่ได้จากการค้นหา
 
@@ -89,13 +89,17 @@ agent_instruction_prompt = """
 """
 
 # สร้าง RAG Agent
+# สามารถใช้กับทั้ง CLI และ ADK Web UI
 rag_agent = Agent(
     model='gemini-2.5-flash',
     name='sales_knowledge_assistant',
-    description="Sales Knowledge Assistant with RAG",
+    description="Sales Knowledge Assistant with RAG - ตอบคำถามเกี่ยวกับทักษะการขายและเทคนิคการขาย",
     instruction=agent_instruction_prompt,
     tools=[pinecone_mcp_toolset],
 )
+
+# Alias สำหรับ ADK Web UI (ต้องมี root_agent)
+root_agent = rag_agent
 
 def main():
     """Main function สำหรับทดสอบ agent"""

@@ -5,9 +5,8 @@ google-adk[a2a]
 # Environment Variables
 python-dotenv==1.1.0
 
-# Pinecone - Vector Database (for 5_pinecone_rag_with_mcp_tools)
+# Pinecone - Vector Database with Integrated Embedding
 # Note: Package renamed from 'pinecone-client' to 'pinecone' in v5.1.0
 pinecone>=5.0.0
 
-# Optional: For other POCs that might need these
-# openai  # Not needed for integrated embedding POC!
+# Note: ไม่ต้องใช้ openai เพราะใช้ Pinecone integrated embedding!

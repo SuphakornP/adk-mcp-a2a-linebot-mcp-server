@@ -15,8 +15,8 @@ load_dotenv()
 # Configuration
 INDEX_NAME = "test-rag-integrated"
 EMBEDDING_MODEL = "multilingual-e5-large"  # Pinecone hosted model
-DIMENSION = 1024  # multilingual-e5-large dimension
-METRIC = "cosine"
+DIMENSION = 1024  # multilingual-e5-large dimension (auto-configured)
+METRIC = "cosine"  # For display only; actual metric is determined by the model
 CLOUD = "aws"
 REGION = "us-west-2"
 FIELD_MAP = {"text": "content"}  # field ที่จะถูก embed อัตโนมัติ
@@ -73,17 +73,16 @@ def create_index_with_integrated_embedding():
     try:
         # สร้าง serverless index พร้อม integrated embedding
         # ใช้ create_index_for_model สำหรับ integrated inference
-        from pinecone import CloudProvider, AwsRegion, EmbedModel, IndexEmbed
+        # Note: metric จะถูกกำหนดโดย model โดยอัตโนมัติ (ไม่ต้องระบุ)
         
         index_config = pc.create_index_for_model(
             name=INDEX_NAME,
-            cloud=CloudProvider.AWS,
-            region=AwsRegion.US_WEST_2,
-            embed=IndexEmbed(
-                model=EmbedModel.Multilingual_E5_Large,
-                field_map=FIELD_MAP
-            ),
-            metric=METRIC
+            cloud="aws",
+            region="us-west-2",
+            embed={
+                "model": "multilingual-e5-large",
+                "field_map": FIELD_MAP
+            }
         )
         
         print(f"\n✅ สร้าง index '{INDEX_NAME}' สำเร็จ!")

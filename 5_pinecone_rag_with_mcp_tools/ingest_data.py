@@ -19,7 +19,7 @@ load_dotenv()
 
 # Configuration
 INDEX_NAME = "test-rag-integrated"
-NAMESPACE = "__default__"
+NAMESPACE = ""  # Empty string for default namespace (not "__default__")
 CHUNK_SIZE = 500  # ขนาด chunk (characters)
 CHUNK_OVERLAP = 50  # overlap ระหว่าง chunk
 
@@ -100,13 +100,17 @@ def load_sample_data() -> List[Dict[str, str]]:
                 json.dump(doc, f, ensure_ascii=False, indent=2)
         
         print(f"✅ สร้างข้อมูล sample {len(sample_docs)} ไฟล์")
+        
+        # Return ข้อมูลที่เพิ่งสร้างทันที (Best Practice)
+        return sample_docs
     
-    # โหลดข้อมูลทั้งหมด
+    # โหลดข้อมูลทั้งหมดจากไฟล์ที่มีอยู่
     documents = []
     for file_path in sample_data_dir.glob("*.json"):
         with open(file_path, 'r', encoding='utf-8') as f:
             documents.append(json.load(f))
     
+    print(f"📂 โหลดจากไฟล์: {len(documents)} เอกสาร")
     return documents
 
 def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVERLAP) -> List[str]:
@@ -147,6 +151,12 @@ def ingest_documents():
     documents = load_sample_data()
     print(f"✅ โหลดข้อมูล {len(documents)} เอกสาร")
     
+    # Check if we have documents
+    if not documents:
+        print("\n❌ ไม่พบข้อมูลที่จะ ingest!")
+        print("💡 กรุณาตรวจสอบว่ามีไฟล์ JSON ใน sample_data/ หรือไม่")
+        return
+    
     # Process and upsert
     print("\n🔄 กำลัง process และ upsert ข้อมูล...")
     print("💡 Pinecone จะสร้าง embedding ให้อัตโนมัติ!\n")
@@ -180,16 +190,28 @@ def ingest_documents():
         
         print(f"   ✅ เตรียม {len(chunks)} records")
     
+    # Check if we have records to upsert
+    if not all_records:
+        print("\n❌ ไม่มี records ที่จะ upsert!")
+        print("💡 ตรวจสอบว่าข้อมูลมี content หรือไม่")
+        return
+    
     # Upsert to Pinecone using upsert_records (for integrated embedding)
     print(f"\n⬆️  กำลัง upsert {len(all_records)} records เข้า Pinecone...")
     print("⚡ Pinecone กำลังสร้าง embeddings อัตโนมัติ...\n")
     
     # Upsert in batches
-    batch_size = 100
+    # Note: namespace เป็น parameter แรก (positional), records เป็น parameter ที่สอง
+    # Best Practice: สำหรับ integrated embedding ใช้ batch_size = 96 (ตาม Pinecone docs)
+    batch_size = 96
     for i in range(0, len(all_records), batch_size):
         batch = all_records[i:i+batch_size]
-        index.upsert_records(records=batch, namespace=NAMESPACE)
-        print(f"   - Upserted batch {i//batch_size + 1} ({len(batch)} records)")
+        try:
+            index.upsert_records(NAMESPACE, batch)
+            print(f"   - Upserted batch {i//batch_size + 1} ({len(batch)} records)")
+        except Exception as e:
+            print(f"   ❌ Error upserting batch {i//batch_size + 1}: {str(e)}")
+            raise
     
     print("\n✅ Upsert สำเร็จ!")
     print("🎉 ข้อมูลถูก embed และ index โดย Pinecone แล้ว!")

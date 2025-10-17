@@ -29,8 +29,8 @@ Slide: https://speakerdeck.com/punsiriboo/agent-development-kit-adk-x-mcp-x-a2a
 
 ---
 ## To Start 
-```
-python -m venv .venv
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -40,11 +40,12 @@ pip install -r requirements.txt
 ## โครงสร้างโฟลเดอร์
 
 ```
-3_ADK/
-├── 1_basic_agent/          # ตัวอย่างการสร้าง Agent แบบพื้นฐาน
-├── 2_agent_with_mcp_tools/ # ตัวอย่าง Agent ที่เรียกใช้งาน MCP Tools ได้
-├── 3_multi_agents/         # ตัวอย่างระบบ Multi-Agent (Manager + Sub-Agents)
-├── 4_a2a/                  # ตัวอย่าง Agent-to-Agent (A2A) Interaction
+adk-mcp-a2a-linebot-mcp-server/
+├── 1_basic_agent/                # ตัวอย่างการสร้าง Agent แบบพื้นฐาน
+├── 2_agent_with_mcp_tools/       # ตัวอย่าง Agent ที่เรียกใช้งาน MCP Tools ได้
+├── 3_multi_agents/               # ตัวอย่างระบบ Multi-Agent (Manager + Sub-Agents)
+├── 4_a2a/                        # ตัวอย่าง Agent-to-Agent (A2A) Interaction
+├── 5_pinecone_rag_with_mcp_tools/ # 🆕 RAG with Pinecone Integrated Embedding
 └── README.md
 ```
 
@@ -93,6 +94,34 @@ pip install -r requirements.txt
 
 ---
 
+## 5. Pinecone RAG with MCP Tools 🆕
+
+📂 `5_pinecone_rag_with_mcp_tools`
+
+* **RAG (Retrieval-Augmented Generation)** ด้วย Pinecone Integrated Embedding
+* ใช้ **Pinecone hosted model** (multilingual-e5-large) - ไม่ต้องเรียก OpenAI API!
+* ค้นหาข้อมูลด้วย **MCP Pinecone tools** - ส่ง text โดยตรง
+* **Best Practice** - ตามแนวทาง Integrated Inference
+
+**Features:**
+- ✅ True Integrated Embedding (ไม่ต้องสร้าง embedding เอง)
+- ✅ Serverless Pinecone Index
+- ✅ รองรับภาษาไทย
+- ✅ Web UI พร้อมใช้งาน
+
+**วิธีรัน:**
+```bash
+cd 5_pinecone_rag_with_mcp_tools
+python3 create_index.py
+python3 ingest_data.py
+
+# Web UI (แนะนำ)
+cd ..
+adk web 5_pinecone_rag_with_mcp_tools.agent:rag_agent
+```
+
+---
+
 ## วิธีการรัน
 
 1. ติดตั้ง dependencies
@@ -104,7 +133,7 @@ pip install -r requirements.txt
 2. รันตัวอย่าง (เช่น multi-agents)
 
    ```bash
-   python -m 3_ADK.3_multi_agents.main
+   python3 -m 3_ADK.3_multi_agents.main
    ```
 
 ---

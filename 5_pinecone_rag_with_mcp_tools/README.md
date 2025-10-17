@@ -54,22 +54,27 @@ Response to User
 ```bash
 # 1. สร้างและ activate virtual environment
 cd 5_pinecone_rag_with_mcp_tools
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate  # macOS/Linux
 
 # 2. ติดตั้ง dependencies
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 
 # 3. ตั้งค่า .env (ใน root folder)
 # PINECONE_API_KEY="your_key"
 # GEMINI_API_KEY="your_key"
 
 # 4. สร้าง index และ ingest data
-python create_index.py
-python ingest_data.py
+python3 create_index.py
+python3 ingest_data.py
 
 # 5. ทดสอบ RAG agent
-python agent.py
+# CLI version:
+python3 agent.py
+
+# หรือ Web UI (แนะนำ):
+cd ..
+adk web 5_pinecone_rag_with_mcp_tools.agent:rag_agent
 ```
 
 ## 🔧 Setup (รายละเอียด)
@@ -78,7 +83,7 @@ python agent.py
 
 ```bash
 # สร้าง virtual environment
-python -m venv .venv
+python3 -m venv .venv
 
 # Activate virtual environment
 # macOS/Linux:
@@ -91,12 +96,13 @@ source .venv/bin/activate
 ### 2. ติดตั้ง Dependencies
 
 ```bash
-# ติดตั้ง dependencies ทั้งหมด (รวม Pinecone แล้ว)
-pip install -r ../requirements.txt
+# ติดตั้ง dependencies ทั้งหมด (ใช้ไฟล์ใน folder นี้)
+pip install -r requirements.txt
 ```
 
 **หมายเหตุ**: 
-- ✅ `requirements.txt` รวม `pinecone-client` และ `python-dotenv` แล้ว
+- ✅ POC นี้มี `requirements.txt` ของตัวเอง (self-contained)
+- ✅ รวม `google-adk`, `pinecone-client`, และ `python-dotenv` แล้ว
 - ✅ ไม่ต้องติดตั้ง `openai` เพราะใช้ Pinecone integrated embedding!
 
 ### 3. ตั้งค่า Environment Variables
@@ -117,7 +123,7 @@ GEMINI_API_KEY="your_gemini_api_key_here"
 
 ```bash
 # ตรวจสอบว่า activate .venv แล้ว
-python create_index.py
+python3 create_index.py
 ```
 
 สคริปต์นี้จะ:
@@ -130,7 +136,7 @@ python create_index.py
 
 ```bash
 # ตรวจสอบว่า activate .venv แล้ว
-python ingest_data.py
+python3 ingest_data.py
 ```
 
 สคริปต์นี้จะ:
@@ -141,10 +147,30 @@ python ingest_data.py
 
 ### 6. ใช้งาน RAG Agent
 
+#### วิธีที่ 1: รันแบบ CLI (Command Line)
+
 ```bash
 # ตรวจสอบว่า activate .venv แล้ว
-python agent.py
+python3 agent.py
 ```
+
+#### วิธีที่ 2: รันแบบ Web UI (แนะนำ!) 🌐
+
+```bash
+# ออกจาก folder ไปที่ root
+cd ..
+
+# รัน ADK Web UI
+adk web 5_pinecone_rag_with_mcp_tools.agent:rag_agent
+```
+
+จากนั้นเปิดเบราว์เซอร์ที่ `http://localhost:8000`
+
+**ข้อดีของ Web UI:**
+- ✅ UI สวยงาม ใช้งานง่าย
+- ✅ เห็นประวัติการสนทนา
+- ✅ ทดสอบได้สะดวกกว่า CLI
+- ✅ เหมือนกับ agent ตัวอื่นๆ ในโปรเจกต์
 
 Agent จะ:
 - ✅ รับคำถามจาก user
@@ -156,10 +182,13 @@ Agent จะ:
 
 ```
 5_pinecone_rag_with_mcp_tools/
+├── .venv/                   # Virtual environment (git ignored)
+├── .gitignore               # Git ignore rules
+├── requirements.txt         # ✨ Dependencies (self-contained)
 ├── __init__.py              # Package initialization
+├── agent.py                 # ✨ RAG agent (รองรับทั้ง CLI และ Web UI)
 ├── create_index.py          # สร้าง Pinecone index (integrated embedding)
 ├── ingest_data.py           # Chunk และ upsert data (ไม่ต้องสร้าง embedding!)
-├── agent.py                 # RAG agent with MCP tools
 ├── README.md                # เอกสารนี้
 └── sample_data/             # Sample documents
     ├── sample_1.json        # ทักษะการขายที่สำคัญ
@@ -236,7 +265,7 @@ Agent ใช้ MCP Pinecone tools ดังนี้:
    }
    ```
 
-2. รัน `python ingest_data.py` ใหม่
+2. รัน `python3 ingest_data.py` ใหม่
 
 ### ปรับแต่ง Chunking Strategy
 
@@ -259,7 +288,7 @@ CHUNK_OVERLAP = 50    # overlap ระหว่าง chunk
 ### ❌ Virtual Environment ไม่ทำงาน
 ```bash
 # ตรวจสอบว่า activate แล้ว (ต้องเห็น (.venv) ข้างหน้า prompt)
-which python  # ต้องชี้ไปที่ .venv/bin/python
+which python3  # ต้องชี้ไปที่ .venv/bin/python3
 
 # ถ้ายัง activate ไม่ได้
 source .venv/bin/activate  # macOS/Linux
@@ -278,16 +307,16 @@ pip list | grep pinecone
 pip list | grep google-adk
 
 # ถ้ายังไม่มี ให้ติดตั้งใหม่
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 ```
 
 ### ❌ "Index not found"
-- รัน `python create_index.py` ก่อน
+- รัน `python3 create_index.py` ก่อน
 - ตรวจสอบว่า index name ถูกต้อง
 - ตรวจสอบว่า activate .venv แล้ว
 
 ### ❌ "No results found"
-- รัน `python ingest_data.py` เพื่อ upsert ข้อมูล
+- รัน `python3 ingest_data.py` เพื่อ upsert ข้อมูล
 - ตรวจสอบว่ามีข้อมูลใน index: ดูที่ Pinecone console
 
 ### ❌ MCP connection errors
