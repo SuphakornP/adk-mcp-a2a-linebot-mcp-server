@@ -1,3 +1,12 @@
+# Google ADK - Agent Development Kit
 google-adk==1.14.1
 google-adk[a2a]
+
+# Environment Variables
 python-dotenv==1.1.0
+
+# Pinecone - Vector Database (for 5_pinecone_rag_with_mcp_tools)
+pinecone-client>=5.0.0
+
+# Optional: For other POCs that might need these
+# openai  # Not needed for integrated embedding POC!

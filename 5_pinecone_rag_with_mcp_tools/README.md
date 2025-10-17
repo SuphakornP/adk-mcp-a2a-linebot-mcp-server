@@ -1,0 +1,335 @@
+# 🚀 Pinecone RAG with MCP Tools (TRUE Integrated Embedding)
+
+POC สำหรับการสร้างระบบ RAG (Retrieval-Augmented Generation) โดยใช้ Pinecone Integrated Embedding และ MCP Tools
+
+## 📋 Overview
+
+Project นี้แสดงวิธีการสร้างและใช้งาน RAG system แบบ **Best Practice** ด้วย:
+- **Pinecone Integrated Embedding**: ไม่ต้องสร้าง embeddings เอง!
+- **Pinecone Hosted Model**: multilingual-e5-large (รองรับภาษาไทย)
+- **Google ADK**: Agent framework
+- **MCP Tools**: Model Context Protocol สำหรับเชื่อมต่อ Pinecone
+
+## 🎉 ข้อดีของ Integrated Embedding
+
+✅ **ไม่ต้องเรียก OpenAI API** - ประหยัดค่าใช้จ่าย  
+✅ **ค้นหาด้วย text โดยตรง** - ไม่ต้องสร้าง embedding ก่อน search  
+✅ **ใช้ MCP search-records ได้เต็มรูปแบบ** - ตามที่ MCP ออกแบบไว้  
+✅ **Consistent Embeddings** - ใช้ model เดียวกันตลอด  
+✅ **ลด Latency** - embed + search ในที่เดียว  
+✅ **Maintainable** - ไม่ต้องจัดการ embedding pipeline
+
+## 🏗️ Architecture
+
+```
+User Query
+    ↓
+Google ADK Agent
+    ↓
+MCP Pinecone Tools
+    ↓
+Pinecone Index (test-rag-integrated)
+    ↓
+Retrieved Context
+    ↓
+Gemini LLM (สังเคราะห์คำตอบ)
+    ↓
+Response to User
+```
+
+## 📦 Index Configuration
+
+- **Name**: `test-rag-integrated`
+- **Embedding Model**: multilingual-e5-large (Pinecone hosted)
+- **Dimension**: 1024
+- **Metric**: cosine
+- **Cloud**: AWS
+- **Region**: us-west-2
+- **Type**: Serverless with Integrated Inference
+- **Field Map**: `{"text": "content"}`
+- **Namespace**: `__default__`
+
+## ⚡ Quick Start
+
+```bash
+# 1. สร้างและ activate virtual environment
+cd 5_pinecone_rag_with_mcp_tools
+python -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+
+# 2. ติดตั้ง dependencies
+pip install -r ../requirements.txt
+
+# 3. ตั้งค่า .env (ใน root folder)
+# PINECONE_API_KEY="your_key"
+# GEMINI_API_KEY="your_key"
+
+# 4. สร้าง index และ ingest data
+python create_index.py
+python ingest_data.py
+
+# 5. ทดสอบ RAG agent
+python agent.py
+```
+
+## 🔧 Setup (รายละเอียด)
+
+### 1. สร้าง Virtual Environment
+
+```bash
+# สร้าง virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+# macOS/Linux:
+source .venv/bin/activate
+
+# Windows:
+# .venv\Scripts\activate
+```
+
+### 2. ติดตั้ง Dependencies
+
+```bash
+# ติดตั้ง dependencies ทั้งหมด (รวม Pinecone แล้ว)
+pip install -r ../requirements.txt
+```
+
+**หมายเหตุ**: 
+- ✅ `requirements.txt` รวม `pinecone-client` และ `python-dotenv` แล้ว
+- ✅ ไม่ต้องติดตั้ง `openai` เพราะใช้ Pinecone integrated embedding!
+
+### 3. ตั้งค่า Environment Variables
+
+แก้ไขไฟล์ `.env` ในโฟลเดอร์ root:
+
+```bash
+# Pinecone Configuration (จำเป็น)
+PINECONE_API_KEY="your_pinecone_api_key_here"
+
+# Google Gemini Configuration (จำเป็น)
+GEMINI_API_KEY="your_gemini_api_key_here"
+
+# ไม่ต้องมี OPENAI_API_KEY แล้ว!
+```
+
+### 4. สร้าง Pinecone Index
+
+```bash
+# ตรวจสอบว่า activate .venv แล้ว
+python create_index.py
+```
+
+สคริปต์นี้จะ:
+- ✅ ตรวจสอบว่า index มีอยู่หรือไม่
+- ✅ สร้าง serverless index พร้อม **integrated embedding**
+- ✅ ใช้ Pinecone hosted model: multilingual-e5-large
+- ✅ แสดงข้อมูล index configuration
+
+### 5. Ingest ข้อมูล
+
+```bash
+# ตรวจสอบว่า activate .venv แล้ว
+python ingest_data.py
+```
+
+สคริปต์นี้จะ:
+- ✅ โหลดข้อมูล sample จาก `sample_data/` (หรือสร้างใหม่ถ้าไม่มี)
+- ✅ แบ่งข้อความเป็น chunks (500 characters, overlap 50)
+- ✅ Upsert เข้า Pinecone (Pinecone จะสร้าง embeddings ให้อัตโนมัติ!)
+- ✅ **ไม่ต้องเรียก OpenAI API!**
+
+### 6. ใช้งาน RAG Agent
+
+```bash
+# ตรวจสอบว่า activate .venv แล้ว
+python agent.py
+```
+
+Agent จะ:
+- ✅ รับคำถามจาก user
+- ✅ ค้นหาข้อมูลด้วย MCP search-records (ส่ง text โดยตรง!)
+- ✅ สังเคราะห์คำตอบด้วย Gemini
+- ✅ แสดงคำตอบพร้อมอ้างอิงแหล่งที่มา
+
+## 📁 Project Structure
+
+```
+5_pinecone_rag_with_mcp_tools/
+├── __init__.py              # Package initialization
+├── create_index.py          # สร้าง Pinecone index (integrated embedding)
+├── ingest_data.py           # Chunk และ upsert data (ไม่ต้องสร้าง embedding!)
+├── agent.py                 # RAG agent with MCP tools
+├── README.md                # เอกสารนี้
+└── sample_data/             # Sample documents
+    ├── sample_1.json        # ทักษะการขายที่สำคัญ
+    ├── sample_2.json        # เทคนิคการปิดการขาย
+    └── sample_3.json        # การจัดการการคัดค้าน
+```
+
+## 💡 Usage Examples
+
+### ตัวอย่างคำถาม
+
+```
+💬 ทักษะการขายที่สำคัญมีอะไรบ้าง?
+
+💬 มีเทคนิคการปิดการขายอะไรบ้าง?
+
+💬 จะจัดการกับการคัดค้านของลูกค้าอย่างไร?
+
+💬 การสร้างความไว้วางใจกับลูกค้าทำอย่างไร?
+```
+
+### ตัวอย่างการตอบ
+
+Agent จะ:
+1. 🔍 ค้นหาข้อมูลที่เกี่ยวข้องใน Pinecone (top 5-10 results)
+2. 📖 อ่านและวิเคราะห์ข้อมูล
+3. 🤖 สังเคราะห์คำตอบที่ครบถ้วน
+4. 📝 จัดรูปแบบให้อ่านง่าย (bullet points, numbering)
+5. 🔗 อ้างอิงแหล่งที่มา
+
+## 🔍 MCP Tools ที่ใช้
+
+Agent ใช้ MCP Pinecone tools ดังนี้:
+
+- **search-records**: ค้นหาข้อมูลที่คล้ายกับ query
+- **describe-index**: ดูข้อมูล index configuration
+- **describe-index-stats**: ดูสถิติของ index
+
+## 📊 Data Flow
+
+```
+1. User Question
+   ↓
+2. Agent receives question
+   ↓
+3. Agent calls search-records (via MCP)
+   ↓
+4. Pinecone returns relevant chunks
+   ↓
+5. Agent synthesizes answer with Gemini
+   ↓
+6. User receives comprehensive answer
+```
+
+## 🎯 Key Features
+
+- ✅ **Serverless Pinecone**: Auto-scaling, pay-per-use
+- ✅ **MCP Integration**: Standardized tool protocol
+- ✅ **Semantic Search**: ค้นหาตามความหมาย ไม่ใช่แค่ keyword
+- ✅ **Context-aware**: รักษา context ด้วย chunk overlap
+- ✅ **Source Attribution**: อ้างอิงแหล่งที่มาของข้อมูล
+- ✅ **Thai Language Support**: รองรับภาษาไทยเต็มรูปแบบ
+
+## 🔧 Customization
+
+### เพิ่มข้อมูลของคุณเอง
+
+1. สร้างไฟล์ JSON ใน `sample_data/`:
+   ```json
+   {
+     "title": "หัวข้อของคุณ",
+     "content": "เนื้อหาของคุณ...",
+     "category": "category_name"
+   }
+   ```
+
+2. รัน `python ingest_data.py` ใหม่
+
+### ปรับแต่ง Chunking Strategy
+
+แก้ไขใน `ingest_data.py`:
+```python
+CHUNK_SIZE = 500      # ขนาด chunk (characters)
+CHUNK_OVERLAP = 50    # overlap ระหว่าง chunk
+```
+
+### ปรับแต่ง Search Parameters
+
+แก้ไขใน `agent.py` (instruction prompt):
+```python
+# เปลี่ยนจำนวนผลลัพธ์ที่ค้นหา
+"ค้นหา top 5-10 ผลลัพธ์"  # → เปลี่ยนเป็น top 3, 15, etc.
+```
+
+## 🐛 Troubleshooting
+
+### ❌ Virtual Environment ไม่ทำงาน
+```bash
+# ตรวจสอบว่า activate แล้ว (ต้องเห็น (.venv) ข้างหน้า prompt)
+which python  # ต้องชี้ไปที่ .venv/bin/python
+
+# ถ้ายัง activate ไม่ได้
+source .venv/bin/activate  # macOS/Linux
+.venv\Scripts\activate     # Windows
+```
+
+### ❌ "PINECONE_API_KEY not found"
+- ตรวจสอบว่ามีไฟล์ `.env` ในโฟลเดอร์ root (ไม่ใช่ใน 5_pinecone_rag_with_mcp_tools)
+- ตรวจสอบว่าใส่ API key ถูกต้อง
+- ตรวจสอบว่า activate .venv แล้ว
+
+### ❌ "Module not found"
+```bash
+# ตรวจสอบว่าติดตั้ง dependencies แล้ว
+pip list | grep pinecone
+pip list | grep google-adk
+
+# ถ้ายังไม่มี ให้ติดตั้งใหม่
+pip install -r ../requirements.txt
+```
+
+### ❌ "Index not found"
+- รัน `python create_index.py` ก่อน
+- ตรวจสอบว่า index name ถูกต้อง
+- ตรวจสอบว่า activate .venv แล้ว
+
+### ❌ "No results found"
+- รัน `python ingest_data.py` เพื่อ upsert ข้อมูล
+- ตรวจสอบว่ามีข้อมูลใน index: ดูที่ Pinecone console
+
+### ❌ MCP connection errors
+- ตรวจสอบว่าติดตั้ง `@pinecone-database/mcp-server`
+- ลอง: `npx -y @pinecone-database/mcp-server --version`
+
+## 📚 Additional Resources
+
+- [Pinecone Documentation](https://docs.pinecone.io/)
+- [Pinecone Integrated Inference](https://docs.pinecone.io/guides/inference/understanding-inference)
+- [MCP Documentation](https://modelcontextprotocol.io/)
+- [Google ADK Documentation](https://github.com/google/adk)
+
+## 🎓 Learning Points
+
+จาก POC นี้คุณจะได้เรียนรู้:
+
+1. **RAG Architecture**: วิธีการสร้าง RAG system
+2. **Vector Embeddings**: การทำงานของ semantic search
+3. **MCP Protocol**: การใช้ MCP tools กับ AI agents
+4. **Chunking Strategy**: วิธีแบ่งเอกสารให้มีประสิทธิภาพ
+5. **Agent Development**: การสร้าง AI agent ด้วย Google ADK
+
+## 🚀 Next Steps
+
+- [ ] เพิ่มข้อมูลจริงของคุณ
+- [ ] ทดลอง chunking strategies ต่างๆ
+- [ ] เพิ่ม reranking สำหรับความแม่นยำสูงขึ้น
+- [ ] เพิ่ม metadata filtering
+- [ ] สร้าง web UI หรือ chatbot interface
+- [ ] ทดสอบกับ embedding models อื่นๆ
+
+## 📝 Notes
+
+- ✅ **Index นี้ใช้ TRUE Integrated Embedding** - ตามแนวทาง Best Practice!
+- ✅ ใช้ Pinecone hosted model: multilingual-e5-large
+- ✅ ไม่ต้องจัดการ embedding pipeline เอง
+- ✅ ประหยัดค่าใช้จ่าย (ไม่ต้องเรียก OpenAI API)
+- ✅ พร้อมใช้งาน production ทันที!
+
+---
+
+**สร้างโดย**: POC Project  
+**วันที่**: 2025  
+**Version**: 1.0
