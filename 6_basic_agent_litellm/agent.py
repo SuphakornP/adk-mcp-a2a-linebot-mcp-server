@@ -10,20 +10,32 @@ load_dotenv()
 # =============================================================================
 # Configuration
 # =============================================================================
-OPENAI_MODEL_ID = os.getenv("OPENAI_MODEL_ID", "gpt-4.1-2025-04-14")
+OPENAI_MODEL_ID = os.getenv("OPENAI_MODEL_ID", "gpt-5-mini-2025-08-07")
 
 # =============================================================================
 # LiteLLM Model Configuration
 # 
-# IMPORTANT: Google ADK's LiteLlm wrapper uses the Completion API internally.
-# OpenAI Responses API features (verbosity, reasoning, reusable prompts) are 
-# NOT supported through ADK's LiteLlm wrapper.
-#
-# See: https://github.com/google/adk-python/issues/3209
+# LiteLlm accepts **kwargs which are passed to litellm.acompletion().
 # 
-# For Responses API features, use litellm.responses() directly (see below).
+# Supported parameters include:
+#   - temperature, max_tokens, top_p, presence_penalty, frequency_penalty
+#   - stop, seed, logit_bias, user, response_format
+#   - reasoning_effort: "none" | "minimal" | "low" | "medium" | "high" | "default"
+#   - verbosity: "low" | "medium" | "high" (GPT-5 models only)
+#   - extra_headers, api_base, api_key
+#
+# NOTE: reasoning_effort works with reasoning models (o1, o3, gpt-5 series)
+#       verbosity works with GPT-5 models via Chat Completions API
 # =============================================================================
-model = LiteLlm(model=f"openai/{OPENAI_MODEL_ID}",reasoning_effort="low")
+model = LiteLlm(
+    model=f"openai/{OPENAI_MODEL_ID}",
+    # Standard completion parameters
+    # temperature=1.0, # 1.0 is the default value can't be changed when using gpt 5 series
+    max_tokens=1000,
+    # GPT-5 / Reasoning model parameters (uncomment if using supported model)
+    reasoning_effort="low",  # For o1, o3, gpt-5 reasoning models
+    verbosity="medium",      # For gpt-5 models
+)
 
 # ทำสร้าง Function เพื่อให้ AI นำไปเรียกใช้งาน
 def find_menu_items(description: str):
