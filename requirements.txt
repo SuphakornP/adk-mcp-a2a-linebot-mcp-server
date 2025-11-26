@@ -9,5 +9,9 @@ python-dotenv==1.1.0
 # Note: Package renamed from 'pinecone-client' to 'pinecone' in v5.1.0
 pinecone>=5.0.0
 
+# LiteLLM - Multi-provider LLM gateway (for 6_basic_agent_litellm)
+# Enables using OpenAI, Anthropic, and other models with Google ADK
+litellm>=1.56.0
+
 # Optional: For other POCs that might need these
 # openai  # Not needed for integrated embedding POC!
