@@ -13,5 +13,8 @@ pinecone>=5.0.0
 # Enables using OpenAI, Anthropic, and other models with Google ADK
 litellm>=1.56.0
 
+# AWS SDK - Required for AWS Bedrock via LiteLLM
+boto3>=1.28.57
+
 # Optional: For other POCs that might need these
 # openai  # Not needed for integrated embedding POC!

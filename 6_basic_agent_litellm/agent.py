@@ -13,6 +13,12 @@ load_dotenv()
 OPENAI_MODEL_ID = os.getenv("OPENAI_MODEL_ID", "gpt-5-mini-2025-08-07")
 CLAUDE_MODEL_ID = os.getenv("CLAUDE_MODEL_ID", "global.anthropic.claude-sonnet-4-20250514-v1:0")
 
+# Set AWS credentials for LiteLLM Bedrock
+# LiteLLM expects these specific environment variable names
+os.environ["AWS_ACCESS_KEY_ID"] = os.getenv("BEDROCK_ACCESS_KEY_ID", "")
+os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv("BEDROCK_SECRET_ACCESS_KEY", "")
+os.environ["AWS_REGION_NAME"] = os.getenv("AWS_REGION_NAME", "us-west-2")
+
 # =============================================================================
 # LiteLLM Model Configuration
 # 
@@ -28,17 +34,18 @@ CLAUDE_MODEL_ID = os.getenv("CLAUDE_MODEL_ID", "global.anthropic.claude-sonnet-4
 # NOTE: reasoning_effort works with reasoning models (o1, o3, gpt-5 series)
 #       verbosity works with GPT-5 models via Chat Completions API
 # =============================================================================
-# model = LiteLlm(
-#     model=f"openai/{OPENAI_MODEL_ID}",
-#     # Standard completion parameters
-#     # temperature=1.0, # 1.0 is the default value can't be changed when using gpt 5 series
-#     max_tokens=1000,
-#     # GPT-5 / Reasoning model parameters (uncomment if using supported model)
-#     reasoning_effort="low",  # For o1, o3, gpt-5 reasoning models
-#     verbosity="medium",      # For gpt-5 models
-# )
-
 model = LiteLlm(
+    model=f"openai/{OPENAI_MODEL_ID}",
+    # Standard completion parameters
+    # temperature=1.0, # 1.0 is the default value can't be changed when using gpt 5 series
+    max_tokens=1000,
+    # GPT-5 / Reasoning model parameters (uncomment if using supported model)
+    reasoning_effort="low",  # For o1, o3, gpt-5 reasoning models
+    verbosity="medium",      # For gpt-5 models
+)
+
+# Claude Model
+claude_model = LiteLlm(
     model=f"bedrock/{CLAUDE_MODEL_ID}",
     max_tokens=1000
 )
