@@ -16,5 +16,9 @@ litellm>=1.56.0
 # AWS SDK - Required for AWS Bedrock via LiteLLM
 boto3>=1.28.57
 
+# LangSmith - Observability and Tracing for LLM applications (with Google ADK support)
+langsmith>=0.4.26
+openinference-instrumentation-google-adk
+
 # Optional: For other POCs that might need these
 # openai  # Not needed for integrated embedding POC!

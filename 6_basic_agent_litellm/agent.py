@@ -5,7 +5,17 @@ from google.adk.models.lite_llm import LiteLlm
 import litellm
 from litellm import responses as litellm_responses
 
+# LangSmith - Observability and Tracing for Google ADK
+from langsmith.integrations.otel import configure as configure_langsmith
+
 load_dotenv()
+
+# =============================================================================
+# LangSmith Configuration
+# Configure tracing before any ADK agent calls
+# Requires: LANGSMITH_API_KEY and LANGSMITH_PROJECT in .env
+# =============================================================================
+configure_langsmith()
 
 # =============================================================================
 # Configuration
