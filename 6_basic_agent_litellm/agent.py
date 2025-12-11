@@ -44,7 +44,7 @@ os.environ["AWS_REGION_NAME"] = os.getenv("AWS_REGION_NAME", "us-west-2")
 # NOTE: reasoning_effort works with reasoning models (o1, o3, gpt-5 series)
 #       verbosity works with GPT-5 models via Chat Completions API
 # =============================================================================
-model = LiteLlm(
+gpt_model = LiteLlm(
     model=f"openai/{OPENAI_MODEL_ID}",
     # Standard completion parameters
     # temperature=1.0, # 1.0 is the default value can't be changed when using gpt 5 series
@@ -52,6 +52,11 @@ model = LiteLlm(
     # GPT-5 / Reasoning model parameters (uncomment if using supported model)
     reasoning_effort="low",  # For o1, o3, gpt-5 reasoning models
     verbosity="medium",      # For gpt-5 models
+    # OpenAI Web Search Tool - enables real-time web search
+    # Requires search-enabled model (e.g., gpt-4o-search-preview) or gpt-4o with tools
+    web_search_options={
+        "search_context_size": "medium"  # Options: "low", "medium" (default), "high"
+    }
 )
 
 # Claude Model
@@ -106,7 +111,7 @@ NEKO_RESTAURANT_PROMPT = """
 # =============================================================================
 root_agent = Agent(
     name="neko_restaurant_agent",
-    model=model,
+    model=gpt_model, #gpt_model, claude_model
     description="Neko restaurant agent powered by OpenAI via LiteLLM",
     instruction=NEKO_RESTAURANT_PROMPT,
     tools=[find_menu_items, get_reservation_slots, add_to_cart],
