@@ -15,7 +15,7 @@ load_dotenv()
 # Configure tracing before any ADK agent calls
 # Requires: LANGSMITH_API_KEY and LANGSMITH_PROJECT in .env
 # =============================================================================
-configure_langsmith()
+#configure_langsmith()
 
 # =============================================================================
 # Configuration

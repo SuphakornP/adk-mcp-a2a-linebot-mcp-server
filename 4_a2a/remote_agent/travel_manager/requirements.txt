@@ -1,0 +1,24 @@
+# Google ADK - Agent Development Kit
+google-adk==1.14.1
+google-adk[a2a]
+
+# Environment Variables
+python-dotenv==1.1.0
+
+# Pinecone - Vector Database (for 5_pinecone_rag_with_mcp_tools)
+# Note: Package renamed from 'pinecone-client' to 'pinecone' in v5.1.0
+pinecone>=5.0.0
+
+# LiteLLM - Multi-provider LLM gateway (for 6_basic_agent_litellm)
+# Enables using OpenAI, Anthropic, and other models with Google ADK
+litellm>=1.56.0
+
+# AWS SDK - Required for AWS Bedrock via LiteLLM
+boto3>=1.28.57
+
+# LangSmith - Observability and Tracing for LLM applications (with Google ADK support)
+langsmith>=0.4.26
+openinference-instrumentation-google-adk
+
+# Optional: For other POCs that might need these
+# openai  # Not needed for integrated embedding POC!
