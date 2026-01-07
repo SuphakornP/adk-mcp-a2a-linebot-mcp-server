@@ -5,6 +5,9 @@ google-adk[a2a]
 # Environment Variables
 python-dotenv==1.1.0
 
+# Async utilities
+nest_asyncio>=1.6.0
+
 # Pinecone - Vector Database (for 5_pinecone_rag_with_mcp_tools)
 # Note: Package renamed from 'pinecone-client' to 'pinecone' in v5.1.0
 pinecone>=5.0.0

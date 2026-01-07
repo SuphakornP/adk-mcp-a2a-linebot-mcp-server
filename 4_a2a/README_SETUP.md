@@ -83,6 +83,31 @@ GEMINI_API_KEY=your_api_key_here
 - **Remote A2A Server** (port 8001): Travel Manager agent with Airbnb MCP toolset
 - **Local ADK Agent**: Connects to the remote agent via A2A protocol
 
+## FastAPI SSE POC
+
+A simple FastAPI app that demonstrates streaming A2A agent responses via Server-Sent Events (SSE).
+
+### Running the FastAPI SSE App
+
+**Terminal 3 - Start FastAPI SSE app (after A2A server is running):**
+```bash
+cd /Users/suphakorn_p/Documents/AREAS/POCs/adk-mcp-a2a-linebot-mcp-server/4_a2a
+./start_fastapi_sse.sh
+```
+
+This will:
+- Start a FastAPI server on port 8002
+- Provide a web UI at http://localhost:8002
+- Expose a streaming endpoint at `POST /chat/stream`
+
+### API Usage
+
+```bash
+curl -X POST http://localhost:8002/chat/stream \
+  -H "Content-Type: application/json" \
+  -d '{"message": "หาที่พักในเชียงใหม่", "user_id": "test_user"}'
+```
+
 ### Troubleshooting
 
 - **Error: "No root_agent found for 'remote_agent'"**: Use `adk web --agent-file agent.py` to explicitly specify the local agent file
