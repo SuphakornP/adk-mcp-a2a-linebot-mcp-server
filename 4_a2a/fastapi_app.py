@@ -62,49 +62,55 @@ async def stream_agent_response(
 ) -> AsyncGenerator[str, None]:
     """Stream agent response as SSE events."""
     
-    # Ensure session exists
-    session = await session_service.get_session(
-        app_name="assistant_app",
-        user_id=user_id,
-        session_id=session_id,
-    )
-    if not session:
-        await session_service.create_session(
+    try:
+        # Ensure session exists
+        session = await session_service.get_session(
             app_name="assistant_app",
             user_id=user_id,
             session_id=session_id,
         )
-    
-    # Create user message
-    user_content = genai_types.Content(
-        role="user",
-        parts=[genai_types.Part.from_text(text=message)],
-    )
-    
-    # Stream events from the agent with SSE streaming mode for token-level output
-    run_config = RunConfig(streaming_mode=StreamingMode.SSE)
-    
-    async for event in runner.run_async(
-        user_id=user_id,
-        session_id=session_id,
-        new_message=user_content,
-        run_config=run_config,
-    ):
-        # Extract text content from event
-        if event.content and event.content.parts:
-            for part in event.content.parts:
-                if hasattr(part, 'text') and part.text:
-                    # Send as SSE event
-                    data = {
-                        "type": "text",
-                        "content": part.text,
-                        "author": event.author,
-                        "partial": getattr(event, 'partial', False),
-                    }
-                    yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
-    
-    # Send done event
-    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+        if not session:
+            await session_service.create_session(
+                app_name="assistant_app",
+                user_id=user_id,
+                session_id=session_id,
+            )
+        
+        # Create user message
+        user_content = genai_types.Content(
+            role="user",
+            parts=[genai_types.Part.from_text(text=message)],
+        )
+        
+        # Stream events from the agent
+        # Note: SSE streaming mode may not work well with function tools
+        # Using default streaming for now
+        async for event in runner.run_async(
+            user_id=user_id,
+            session_id=session_id,
+            new_message=user_content,
+        ):
+            # Extract text content from event
+            if event.content and event.content.parts:
+                for part in event.content.parts:
+                    if hasattr(part, 'text') and part.text:
+                        # Send as SSE event
+                        data = {
+                            "type": "text",
+                            "content": part.text,
+                            "author": event.author,
+                            "partial": getattr(event, 'partial', False),
+                        }
+                        yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+        
+        # Send done event
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
+        
+    except Exception as e:
+        print(f"[ERROR] Stream error: {e}")
+        import traceback
+        traceback.print_exc()
+        yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
 
 
 @app.post("/chat/stream")
