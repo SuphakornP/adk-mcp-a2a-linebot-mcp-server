@@ -30,7 +30,7 @@ agent_instruction_prompt = """
 """
 
 root_agent = Agent(
-    model='gemini-2.0-flash-001',
+    model='gemini-3.0-pro-preview',
     name='travel_manager',
     description="Travel Agent Manager",
     instruction=agent_instruction_prompt,
