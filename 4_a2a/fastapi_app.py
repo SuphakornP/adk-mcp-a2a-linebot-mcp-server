@@ -10,9 +10,6 @@ from dotenv import load_dotenv
 # Load environment variables from .env file FIRST
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-# Apply ADK client streaming patch BEFORE any ADK imports
-import adk_client_streaming_patch  # noqa: F401
-
 import json
 import uuid
 from typing import AsyncGenerator
@@ -82,26 +79,76 @@ async def stream_agent_response(
             parts=[genai_types.Part.from_text(text=message)],
         )
         
-        # Stream events from the agent
-        # Note: SSE streaming mode may not work well with function tools
-        # Using default streaming for now
+        # Stream events from the agent with SSE streaming mode for token-level output
+        run_config = RunConfig(streaming_mode=StreamingMode.SSE)
+        
         async for event in runner.run_async(
             user_id=user_id,
             session_id=session_id,
             new_message=user_content,
+            run_config=run_config,
         ):
-            # Extract text content from event
+            # Build event data with all available information
+            event_data = {
+                "id": event.id,
+                "author": event.author,
+                "invocation_id": event.invocation_id,
+                "partial": getattr(event, 'partial', None),
+                "turn_complete": getattr(event, 'turn_complete', None),
+                "finish_reason": str(event.finish_reason) if event.finish_reason else None,
+                "error_code": event.error_code,
+                "error_message": event.error_message,
+                "interrupted": event.interrupted,
+            }
+            
+            # Check for actions (transfer_to_agent, escalate, state changes)
+            if event.actions:
+                actions_data = {}
+                if event.actions.transfer_to_agent:
+                    actions_data["transfer_to_agent"] = event.actions.transfer_to_agent
+                if event.actions.escalate:
+                    actions_data["escalate"] = event.actions.escalate
+                if event.actions.state_delta:
+                    actions_data["state_delta"] = {k: str(v) for k, v in event.actions.state_delta.items()}
+                if event.actions.artifact_delta:
+                    actions_data["artifact_delta"] = event.actions.artifact_delta
+                if actions_data:
+                    event_data["actions"] = actions_data
+            
+            # Process content parts
             if event.content and event.content.parts:
+                parts_data = []
                 for part in event.content.parts:
+                    part_info = {}
+                    
+                    # Text content
                     if hasattr(part, 'text') and part.text:
-                        # Send as SSE event
-                        data = {
-                            "type": "text",
-                            "content": part.text,
-                            "author": event.author,
-                            "partial": getattr(event, 'partial', False),
-                        }
-                        yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+                        part_info["type"] = "text"
+                        part_info["text"] = part.text
+                    
+                    # Function call (tool use)
+                    if hasattr(part, 'function_call') and part.function_call:
+                        part_info["type"] = "function_call"
+                        part_info["function_name"] = part.function_call.name
+                        part_info["function_args"] = part.function_call.args
+                        part_info["function_id"] = part.function_call.id
+                    
+                    # Function response (tool result)
+                    if hasattr(part, 'function_response') and part.function_response:
+                        part_info["type"] = "function_response"
+                        part_info["function_name"] = part.function_response.name
+                        part_info["function_id"] = part.function_response.id
+                        # Truncate response if too long
+                        response_str = str(part.function_response.response)
+                        part_info["response_preview"] = response_str[:500] + "..." if len(response_str) > 500 else response_str
+                    
+                    if part_info:
+                        parts_data.append(part_info)
+                
+                event_data["parts"] = parts_data
+            
+            # Send the event
+            yield f"data: {json.dumps(event_data, ensure_ascii=False, default=str)}\n\n"
         
         # Send done event
         yield f"data: {json.dumps({'type': 'done'})}\n\n"
@@ -215,14 +262,21 @@ async def index():
                         if (line.startsWith('data: ')) {
                             try {
                                 const data = JSON.parse(line.slice(6));
-                                if (data.type === 'text' && data.author === 'assistant_agent') {
-                                    if (data.partial) {
-                                        fullText += data.content;
-                                    } else {
-                                        fullText = data.content;
+                                if (data.type === 'done') continue;
+                                
+                                // Handle new event structure with parts array
+                                if (data.author === 'assistant_agent' && data.parts) {
+                                    for (const part of data.parts) {
+                                        if (part.type === 'text' && part.text) {
+                                            if (data.partial) {
+                                                fullText += part.text;
+                                            } else {
+                                                fullText = part.text;
+                                            }
+                                            assistantDiv.textContent = fullText;
+                                            chatBox.scrollTop = chatBox.scrollHeight;
+                                        }
                                     }
-                                    assistantDiv.textContent = fullText;
-                                    chatBox.scrollTop = chatBox.scrollHeight;
                                 }
                             } catch (e) {}
                         }

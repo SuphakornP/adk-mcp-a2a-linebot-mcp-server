@@ -1,18 +1,9 @@
 import os 
-import asyncio
-import nest_asyncio
-nest_asyncio.apply()
-
-# Apply ADK streaming patches BEFORE importing ADK modules
-import adk_streaming_patch  # noqa: F401
-
 from google.adk.agents import Agent
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
 from mcp import StdioServerParameters
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
-from google.adk.a2a.utils.agent_card_builder import AgentCardBuilder
-from a2a.types import AgentCapabilities
 
 airbnb_mcp_toolset = MCPToolset(
     connection_params=StdioConnectionParams(
@@ -39,25 +30,14 @@ agent_instruction_prompt = """
 """
 
 root_agent = Agent(
-    model='gemini-3-flash-preview',
+    model='gemini-2.5-flash',
     name='travel_manager',
     description="Travel Agent Manager",
     instruction=agent_instruction_prompt,
     tools=[airbnb_mcp_toolset],
 )
 
-# Build agent card with streaming capability enabled
-async def build_agent_card():
-    card_builder = AgentCardBuilder(
-        agent=root_agent,
-        rpc_url="http://localhost:8001/",
-        capabilities=AgentCapabilities(streaming=True),
-    )
-    return await card_builder.build()
-
-# Create A2A app with streaming-enabled agent card
-agent_card = asyncio.get_event_loop().run_until_complete(build_agent_card())
-a2a_app = to_a2a(root_agent, port=8001, agent_card=agent_card)
+a2a_app = to_a2a(root_agent, port=8001)
 
 # To Start A2A Contribuiting
 # uvicorn agent:a2a_app --port 8001 --reload --env-file .env
