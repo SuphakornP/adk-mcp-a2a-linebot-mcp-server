@@ -10,6 +10,7 @@
 - **เช็กเวลาจองโต๊ะ**: แสดงเวลาที่สามารถจองโต๊ะได้ในวันที่เลือก
 - **เพิ่มอาหารลงตะกร้า**: จัดการตะกร้าสั่งอาหารของลูกค้า
 - **ภาษาตอบกลับ**: พูดจาน่ารัก ใช้คำลงท้าย "เมี๊ยว~"
+- **Safety guardrails**: บล็อกคำขอนอกขอบเขต คำสั่ง jailbreak การขอข้อมูลลับ คำสั่งระบบ และธุรกรรมการเงินก่อนถึงโมเดล
 - **OpenAI Responses API**: ใช้ `openai/responses/gpt-5.4-mini` ผ่าน LiteLLM
 
 ---
@@ -57,3 +58,11 @@ adk web 7_agent_litellm_response_openai
 - ใช้ LiteLLM model prefix `openai/responses/<model>` เพื่อเรียก OpenAI Responses API แทน Chat Completions API
 - Responses API รองรับ features เพิ่มเติม เช่น verbosity, reusable prompts, web search
 - `LiteLlm(**kwargs)` ส่ง kwargs ทั้งหมดตรงไปยัง `litellm.acompletion()` — สามารถใช้พารามิเตอร์ใดก็ได้ที่ LiteLLM รองรับ
+- ใช้ Google ADK `before_agent_callback` เพื่อปฏิเสธคำขอนอกขอบเขตหรือไม่ปลอดภัยตั้งแต่ต้นทาง
+- ใช้ Google ADK `before_tool_callback` เป็น defense in depth เพื่อ allowlist เฉพาะ tools ของร้านอาหารและบล็อก input ที่น่าสงสัย
+
+## 🛡️ Guardrail Scope
+- อนุญาตเฉพาะคำขอเกี่ยวกับเมนูอาหาร การแนะนำอาหาร การจองโต๊ะ และการสั่งอาหารของร้านเนโกะ
+- ปฏิเสธคำขอที่พยายามให้ละเลยคำสั่ง เปิดเผย prompt หรือข้อมูลลับ รันคำสั่งระบบ หรือดึงข้อมูลส่วนตัว
+- ปฏิเสธคำขอซื้อของ จ่ายเงิน โอนเงิน หรือธุรกรรมการเงินอื่นที่ agent นี้ไม่มีสิทธิ์ทำ
+- หากคำขอไม่อยู่ในขอบเขต Agent จะปฏิเสธอย่างสุภาพแทนการส่งต่อให้โมเดลตอบเอง
