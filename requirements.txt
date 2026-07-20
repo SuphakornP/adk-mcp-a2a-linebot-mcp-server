@@ -1,6 +1,8 @@
 # Google ADK - Agent Development Kit
-google-adk==1.14.1
-google-adk[a2a]
+# ADK Skills (SkillToolset/load_skill_from_dir) requires the newer ADK API.
+google-adk[a2a]>=1.28.1,<2.0.0
+google-genai>=1.70.0,<2.0.0
+google-cloud-aiplatform[agent-engines]>=1.148.1,<2.0.0
 
 # Environment Variables
 python-dotenv==1.1.0

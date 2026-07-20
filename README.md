@@ -1,148 +1,289 @@
-# Agent Development Kit x MCP x A2A
-![alt text](images/title.png)
-Instructor: Punsiri Boonyakiat
+# ADK Agent Playground
 
-ตัวอย่างโปรเจกต์สาธิตการใช้งาน **Google Agent Development Kit (ADK)**
-ใช้สำหรับสร้าง Agent, รวม Agent หลายตัว, และเชื่อมต่อกับ MCP Tools
+![Agent Development Kit x MCP x A2A](images/title.png)
 
-## 📌 เนื้อหาหลัก Agent Development Kit (ADK) x MCP x A2A 🔥🔥
+Hands-on repository สำหรับทดลองสร้าง AI Agent ด้วย Google Agent Development Kit
+(ADK) ตั้งแต่ agent พื้นฐาน ไปจนถึง MCP, multi-agent, A2A, RAG, LiteLLM,
+OpenAI Responses API, safety guardrails และ ADK Skills
 
-Slide: https://speakerdeck.com/punsiriboo/agent-development-kit-adk-x-mcp-x-a2a
+Repository นี้เริ่มจากการ fork
+[`punsiriboo/adk-mcp-a2a-linebot-mcp-server`](https://github.com/punsiriboo/adk-mcp-a2a-linebot-mcp-server)
+ของ Punsiri Boonyakiat แล้วพัฒนาต่อเป็น playground ส่วนตัว จึงมีทั้งตัวอย่างจาก workshop
+และ PoC ที่เพิ่ม ทดลอง และปรับแก้ภายหลัง ไม่ได้เป็น mirror ของ upstream แบบตรงตัว
 
+> สถานะโครงการ: learning lab / proof of concept โค้ดบางส่วนใช้ mock data,
+> preview model หรือ external service และยังต้อง harden เพิ่มก่อนนำไปใช้ production
 
-1. Introduction to ADK
-    * สร้าง AI Agents ด้วย Model, Goal, Instruction, Tools
-    * Instruction Prompts คือหัวใจสำคัญ เพราะเป็นตัวกำหนดการทำงานของ AI Agent การเลือกเครื่องมือที่ถูกต้อง การทำงานให้ตรง scope
-    * ทดสอบผ่าน adk web (Agent Simulator)
-2. Connecting Agents to MCP Tools
-    * Agent สามารมารถเรียกใช้เครื่องมือได้หลากหลาย
-    * Tools: Built-in, 3rd-Party, Google Cloud, MCP, Open API
-    * Airbnb MCP (Search, Listing) / LINE Bot MCP (Messaging API) 
-    *  LINE Bot MCP ใช้ Channel Secret และ Access Token เชื่อมต่อ
-3. Building Multi-Agent Systems
-    * ข้อดี: Specialization, Scalability, Delegation, Robustness, Human Analogy
-    * Workshop: ศึกษาโค้ด Multi-Agent และดูการส่งต่องาน
-4. A2A Protocol (Agent-to-Agent)
-    * แนวคิด: เหมือนส่งพนักงานไปทำงานข้ามบริษัท
-    * เปิด Agent ออกสู่สาธารณะ เรียกใช้งานจากภายนอกได้
-    * มี Agent Card (เหมือนเรซูเม่ หรือนามบัตรของ AI Agent) ให้ metadata ของ Agent เรียกใช้งาน
+## สิ่งที่ต่อยอดใน Fork นี้
 
----
-## To Start 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+- เพิ่ม Pinecone RAG ที่ใช้ integrated embedding และเรียกค้นผ่าน MCP
+- ทดลองเปลี่ยน model provider ผ่าน LiteLLM ทั้ง OpenAI และ AWS Bedrock
+- เพิ่ม OpenAI Responses API พร้อม `before_agent_callback` และ
+  `before_tool_callback` สำหรับ safety guardrails
+- ทดลอง A2A streaming และ FastAPI SSE สำหรับส่ง event จาก remote agent
+- เพิ่ม ADK Skills PoC จาก
+  [`punsiriboo/adk-skills`](https://github.com/punsiriboo/adk-skills) ทั้ง Blog Skills
+  และ Marathon Planner พร้อม GIS, Maps MCP และ map artifact
+- รวม configuration หลักไว้ที่ root `.env` และเก็บเฉพาะตัวอย่างใน `.env.example`
+
+## Learning Path
+
+แต่ละโฟลเดอร์เป็น PoC แยกกัน แต่สามารถอ่านต่อเนื่องตามเส้นทางนี้ได้:
+
+```mermaid
+flowchart LR
+    P1["1. Basic Agent<br/>model + instruction + tools"] --> P2["2. MCP Tools<br/>Airbnb + LINE"]
+    P2 --> P3["3. Multi-Agent<br/>routing + delegation"]
+    P3 --> P4["4. A2A<br/>remote agent + streaming"]
+    P3 --> P5["5. RAG<br/>Pinecone + MCP"]
+    P1 --> P6["6. LiteLLM<br/>multi-provider"]
+    P6 --> P7["7. Responses API<br/>guardrails"]
+    P3 --> P8["8. ADK Skills<br/>progressive disclosure"]
 ```
 
----
+## PoC Catalog
 
-## โครงสร้างโฟลเดอร์
+| Folder | Agent / แนวคิดหลัก | Integration สำคัญ | เอกสาร |
+|---|---|---|---|
+| `1_basic_agent` | Neko Restaurant Agent: model, instruction และ Python function tools | Gemini | [README](1_basic_agent/README.md) |
+| `2_agent_with_mcp_tools` | Travel Manager ค้นหาที่พักและส่งผลไป LINE | Airbnb MCP, LINE Bot MCP | [README](2_agent_with_mcp_tools/README.md) |
+| `3_multi_agents` | Manager route งานไปยัง Law Analyst หรือ Joke Agent | ADK sub-agents, `AgentTool` | [Source](3_multi_agents/agent.py) |
+| `4_a2a` | Local Assistant ติดต่อ Remote Travel Agent ผ่าน A2A | A2A, Airbnb MCP, streaming, FastAPI SSE | [Setup guide](4_a2a/README_SETUP.md) |
+| `5_pinecone_rag_with_mcp_tools` | Sales Knowledge Assistant แบบ RAG | Pinecone integrated embedding, Pinecone MCP | [README](5_pinecone_rag_with_mcp_tools/README.md) |
+| `6_basic_agent_litellm` | Neko Agent ที่สลับ provider ผ่าน LiteLLM | OpenAI, AWS Bedrock, optional LangSmith | [README](6_basic_agent_litellm/README.md) |
+| `7_agent_litellm_response_openai` | OpenAI Responses API พร้อม scope และ tool guardrails | LiteLLM, OpenAI Responses API | [README](7_agent_litellm_response_openai/README.md) |
+| `8_agent_with_skill` | Blog Skills Agent และ Marathon Planner Agent | ADK Skills, Maps Grounding Lite MCP, local GIS | [README](8_agent_with_skill/README.md) / [Testing guide](8_agent_with_skill/TESTING_GUIDE.md) |
 
+## Integration Overview
+
+```mermaid
+flowchart TB
+    User["User"] --> UI["ADK CLI / ADK Web / FastAPI"]
+    UI --> ADK["Google ADK Agents"]
+
+    ADK --> Gemini["Gemini"]
+    ADK --> LiteLLM["LiteLLM"]
+    LiteLLM --> OpenAI["OpenAI"]
+    LiteLLM -. "alternative config" .-> Bedrock["AWS Bedrock"]
+
+    ADK --> MCP["MCP Toolsets"]
+    MCP --> Airbnb["Airbnb"]
+    MCP --> Line["LINE Bot"]
+    MCP --> Pinecone["Pinecone"]
+    MCP --> Maps["Google Maps"]
+
+    ADK --> A2A["A2A Remote Agent"]
+    ADK --> Skills["ADK Skills"]
+    Skills --> Resources["Instructions + references + scripts + assets"]
 ```
+
+## Project Structure
+
+```text
 adk-mcp-a2a-linebot-mcp-server/
-├── 1_basic_agent/                # ตัวอย่างการสร้าง Agent แบบพื้นฐาน
-├── 2_agent_with_mcp_tools/       # ตัวอย่าง Agent ที่เรียกใช้งาน MCP Tools ได้
-├── 3_multi_agents/               # ตัวอย่างระบบ Multi-Agent (Manager + Sub-Agents)
-├── 4_a2a/                        # ตัวอย่าง Agent-to-Agent (A2A) Interaction
-├── 5_pinecone_rag_with_mcp_tools/ # 🆕 RAG with Pinecone Integrated Embedding
+├── 1_basic_agent/                       # Agent + local function tools
+├── 2_agent_with_mcp_tools/              # Airbnb and LINE MCP
+├── 3_multi_agents/                      # Manager and specialist agents
+├── 4_a2a/                               # Remote A2A + streaming experiments
+├── 5_pinecone_rag_with_mcp_tools/       # RAG with integrated embedding
+├── 6_basic_agent_litellm/               # LiteLLM provider experiments
+├── 7_agent_litellm_response_openai/     # Responses API + guardrails
+├── 8_agent_with_skill/                  # Blog and Marathon Skills agents
+├── images/
+├── .env.example                         # Environment variable template
+├── requirements.txt                     # Shared Python dependencies
 └── README.md
 ```
 
----
+## Prerequisites
 
-## 1. Basic Agent
+- Python 3.10 ขึ้นไป; environment ปัจจุบันทดสอบด้วย Python 3.12.6
+- Node.js และ `npx` สำหรับ PoC ที่เปิด MCP server ผ่าน stdio
+- API key หรือ cloud account เฉพาะ service ที่ต้องการทดสอบ
+- Network access สำหรับดาวน์โหลด MCP package และเรียก external API
 
-📂 `1_basic_agent`
+Shared environment ปัจจุบันใช้ Google ADK 1.35.2, Google Gen AI SDK 1.75.0,
+LiteLLM 1.80.5 และ Pinecone SDK 8.0.0 เวอร์ชันที่ติดตั้งจริงอาจเปลี่ยนได้ตามช่วง
+ที่กำหนดใน `requirements.txt`
 
-* สาธิตการสร้าง Agent แบบง่าย ๆ ด้วย ADK
-* ใช้เพียง **model** และ **instruction**
-* เหมาะกับการเริ่มต้นเพื่อทำความเข้าใจโครงสร้าง Agent
+## Setup
 
----
+รันจาก root ของ repository:
 
-## 2. Agent with MCP Tools
-
-📂 `2_agent_with_mcp_tools`
-
-* เพิ่มความสามารถให้ Agent สามารถเรียกใช้ **MCP Tools** ได้
-* ตัวอย่าง: เรียก API ภายนอก, Query ข้อมูล หรือสั่งงานผ่าน Tool
-
----
-
-## 3. Multi Agents
-
-📂 `3_multi_agents`
-
-* โชว์การสร้าง **Manager Agent (Router)**
-* มี Sub-Agents เช่น:
-
-  * `news_analyst` → วิเคราะห์ข่าว
-  * `joke_agent` → เล่าเรื่องตลก
-* Manager Agent จะรับข้อความ แล้วเลือก Sub-Agent ที่เหมาะสมในการทำงาน
-
-### Flow Diagram
-
----
-
-## 4. Agent-to-Agent (A2A)
-
-📂 `4_a2a`
-
-* สาธิตการที่ Agent คุย/ประสานงานกับ Agent อื่น ๆ โดยตรง (A2A interaction)
-* ใช้ในเคสที่หลาย Agent ต้องทำงานร่วมกันแบบ collaborative
-
----
-
-## 5. Pinecone RAG with MCP Tools 🆕
-
-📂 `5_pinecone_rag_with_mcp_tools`
-
-* **RAG (Retrieval-Augmented Generation)** ด้วย Pinecone Integrated Embedding
-* ใช้ **Pinecone hosted model** (multilingual-e5-large) - ไม่ต้องเรียก OpenAI API!
-* ค้นหาข้อมูลด้วย **MCP Pinecone tools** - ส่ง text โดยตรง
-* **Best Practice** - ตามแนวทาง Integrated Inference
-
-**Features:**
-- ✅ True Integrated Embedding (ไม่ต้องสร้าง embedding เอง)
-- ✅ Serverless Pinecone Index
-- ✅ รองรับภาษาไทย
-- ✅ Web UI พร้อมใช้งาน
-
-**วิธีรัน:**
 ```bash
-cd 5_pinecone_rag_with_mcp_tools
-python3 create_index.py
-python3 ingest_data.py
-
-# Web UI (แนะนำ)
-cd ..
-adk web 5_pinecone_rag_with_mcp_tools.agent:rag_agent
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
----
+ถ้ายังไม่มี root `.env` ให้สร้างจาก template แล้วใส่ค่าเฉพาะที่ต้องใช้:
 
-## วิธีการรัน
+```bash
+cp .env.example .env
+```
 
-1. ติดตั้ง dependencies
+ค่าพื้นฐานสำหรับ Gemini agents:
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+```env
+GOOGLE_GENAI_USE_VERTEXAI=FALSE
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+MODEL_ID=gemini-2.5-flash
+```
 
-2. รันตัวอย่าง (เช่น multi-agents)
+ห้าม commit API key, token หรือ cloud credential จริง ไฟล์ `.env` ถูก ignore ไว้แล้ว
+ส่วน `.env.example` ต้องมีเพียงชื่อ variable และ placeholder เท่านั้น
 
-   ```bash
-   python3 -m 3_ADK.3_multi_agents.main
-   ```
+### Environment Matrix
 
----
+| PoC | Environment variables เพิ่มเติม | หมายเหตุ |
+|---|---|---|
+| 1, 3 | ใช้ Gemini configuration พื้นฐาน | Function tools และ sub-agents ทำงานใน process เดียว |
+| 2 | `CHANNEL_ACCESS_TOKEN`, `DESTINATION_USER_ID` เมื่อต้องการใช้ LINE | ต้องมี Node.js; LINE tool ส่งข้อความจริงได้ |
+| 4 | `GEMINI_API_KEY` สำหรับ remote agent | Remote A2A server เป็น process แยกและยังใช้ env/setup ภายในโฟลเดอร์ของตัวเอง |
+| 5 | `PINECONE_API_KEY` | `create_index.py` และ `ingest_data.py` เปลี่ยนข้อมูลบน Pinecone จริง |
+| 6 | `OPENAI_API_KEY`, `OPENAI_MODEL_ID` | Bedrock และ LangSmith เป็น configuration ทางเลือกใน `.env.example` |
+| 7 | `OPENAI_API_KEY`, `OPENAI_MODEL_ID` | เรียก OpenAI Responses API ผ่าน LiteLLM |
+| 8 Blog | Gemini configuration พื้นฐาน | โหลด `.env` จาก root โดยตรง |
+| 8 Marathon | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, `GOOGLE_MAPS_API_KEY` | ถ้าไม่ตั้งค่า Maps MCP จะถูกปิด แต่ local GIS ยังทำงานได้ |
 
-## หมายเหตุ
+## Run
 
-* แต่ละโฟลเดอร์มีโค้ดตัวอย่างที่สามารถนำไปปรับใช้จริง
-* เหมาะสำหรับ Developer ที่อยากเรียนรู้การสร้าง Agent ตั้งแต่ **Basic → Tools → Multi-Agent → Agent-to-Agent**
+### Interactive CLI
 
----
+`adk run` เหมาะสำหรับเปิด agent เดี่ยวจาก root:
 
-Enjoy building with **ADK** 🚀
+```bash
+adk run 1_basic_agent
+adk run 2_agent_with_mcp_tools
+adk run 3_multi_agents
+adk run 5_pinecone_rag_with_mcp_tools
+adk run 6_basic_agent_litellm
+adk run 7_agent_litellm_response_openai
+```
+
+รันทีละคำสั่งตาม PoC ที่ต้องการ ไม่จำเป็นต้องเปิดทั้งหมดพร้อมกัน
+
+### ADK Web
+
+สำหรับ top-level agents ให้เปิด root เป็น agents directory:
+
+```bash
+adk web .
+```
+
+จากนั้นเลือก `1_basic_agent`, `2_agent_with_mcp_tools`, `3_multi_agents`,
+`5_pinecone_rag_with_mcp_tools`, `6_basic_agent_litellm` หรือ
+`7_agent_litellm_response_openai` ตามค่าที่ตั้งไว้ใน `.env`
+
+ADK อาจแสดง directory อื่นที่ root ซึ่งไม่ใช่ agent เช่น `images` หรือ
+`8_agent_with_skill`; อย่าเลือก directory เหล่านั้นจาก server ชุดนี้ และเปิด PoC 8
+ด้วยคำสั่งเฉพาะด้านล่างแทน
+
+PoC 8 เป็น agents directory ของตัวเองและมี 2 agents:
+
+```bash
+adk web 8_agent_with_skill
+```
+
+เปิด `http://127.0.0.1:8000` แล้วเลือก `blog_skills_agent` หรือ
+`marathon_planner_agent` รายละเอียด prompt และ expected tool flow อยู่ใน
+[`8_agent_with_skill/TESTING_GUIDE.md`](8_agent_with_skill/TESTING_GUIDE.md)
+
+### Pinecone RAG
+
+เตรียม index และ sample data ก่อนเปิด agent ครั้งแรก:
+
+> `create_index.py` ใช้ชื่อ index `test-rag-integrated` และอาจเสนอให้ลบ/recreate
+> index เดิม ควรตรวจ account, project และชื่อ index ให้ถูกต้องก่อนยืนยัน
+
+```bash
+python 5_pinecone_rag_with_mcp_tools/create_index.py
+python 5_pinecone_rag_with_mcp_tools/ingest_data.py
+adk run 5_pinecone_rag_with_mcp_tools
+```
+
+### A2A
+
+PoC 4 ต้องเปิดอย่างน้อย 2 processes: Remote Travel Agent ที่ port `8001` และ
+local client/UI ที่เชื่อมผ่าน agent card หากต้องการทดสอบ FastAPI SSE ให้เปิด process
+ที่ port `8002` เพิ่มอีกตัว ดูลำดับ setup และข้อจำกัดที่
+[`4_a2a/README_SETUP.md`](4_a2a/README_SETUP.md)
+
+> PoC นี้เป็น historical/experimental setup: startup scripts ยังมี absolute path
+> ของเครื่องผู้พัฒนา, remote environment ใช้ dependency ชุดเก่า และคู่มือบางส่วนใช้
+> ADK CLI syntax รุ่นก่อน จึงควร revalidate compatibility ก่อนรันหรือย้ายเครื่อง
+
+## Suggested Smoke Tests
+
+| PoC | Prompt / สิ่งที่ควรตรวจ |
+|---|---|
+| 1 | `มีเมนูอาหารญี่ปุ่นอะไรบ้าง` แล้วตรวจว่าเรียก `find_menu_items` |
+| 2 | ค้นหาที่พักตามเมือง วันที่ และจำนวนผู้เข้าพัก; ทดสอบ LINE เฉพาะ recipient ที่อนุญาต |
+| 3 | ถามกฎหมายหนึ่งครั้งและขอมุกหนึ่งครั้ง เพื่อตรวจ routing ไปคนละ sub-agent |
+| 5 | ถามเรื่องเทคนิคการขายและตรวจว่าคำตอบอ้างอิง context จาก Pinecone |
+| 6 | เปรียบเทียบ verbosity/reasoning ของ model ที่ตั้งผ่าน LiteLLM |
+| 7 | ทดสอบทั้งคำขอเกี่ยวกับร้านและคำขอนอก scope เพื่อดู guardrail callbacks |
+| 8 | ใช้ test matrix ใน [Testing guide](8_agent_with_skill/TESTING_GUIDE.md) |
+
+ตรวจ dependency และ syntax หลังแก้โค้ด:
+
+```bash
+pip check
+python -m compileall -q -x '(^|/)(\.venv|__pycache__)/' \
+  1_basic_agent 2_agent_with_mcp_tools 3_multi_agents 4_a2a \
+  5_pinecone_rag_with_mcp_tools 6_basic_agent_litellm \
+  7_agent_litellm_response_openai 8_agent_with_skill
+```
+
+### Validation Status
+
+- PoC 8 ผ่าน manual smoke/integration test ทั้ง 2 agents, local GIS และ Maps MCP
+  เมื่อ 2026-07-20 ดูรายละเอียดใน
+  [`8_agent_with_skill/TESTING_GUIDE.md`](8_agent_with_skill/TESTING_GUIDE.md)
+- Repository ยังไม่มี automated test suite ครอบคลุม PoC 1–7
+- External integrations และ model IDs ควรทดสอบใหม่เมื่อเปลี่ยน dependency, credential,
+  account policy หรือ provider configuration
+- PoC 4 ต้องตรวจ compatibility แยก เพราะ remote requirements และ startup flow ต่างจาก
+  shared environment ที่ root
+
+## Observability
+
+- ADK Web: ดู agent events, tool calls และ trace ของ session ในเครื่อง
+- Terminal: ดู Python exception, MCP stdio และ authentication errors
+- LangSmith: มี configuration เตรียมไว้ใน PoC 6 แต่ปิดไว้เป็นค่าเริ่มต้น
+- Google Cloud Observability: PoC 8 รองรับ OpenTelemetry/Agent Engine settings;
+  ดูรายละเอียดและ privacy trade-offs ใน
+  [`8_agent_with_skill/TESTING_GUIDE.md`](8_agent_with_skill/TESTING_GUIDE.md)
+- Provider console: ใช้ตรวจ API usage, quota, error rate และค่าใช้จ่ายของ Pinecone,
+  OpenAI, AWS, LINE และ Google Maps
+
+## Safety Notes
+
+- `.adk/` ถูก ignore เพราะอาจมี prompt, session database และ generated artifacts;
+  ให้ถือว่าเป็น local sensitive state และห้ามนำขึ้น source control
+- PoC 2 สามารถส่ง LINE Flex Message ไปยัง `DESTINATION_USER_ID` จริง
+- PoC 5 สามารถสร้าง index และ upsert records เข้า Pinecone จริง
+- PoC 8 Marathon สามารถเรียก Google Maps API และใช้ quota/เกิดค่าใช้จ่ายได้
+- PoC 4 FastAPI ไม่มี authentication หรือ rate limit และมี script ที่ bind `0.0.0.0`;
+  ใช้เฉพาะ local/trusted network และห้าม expose สู่ production โดยตรง
+- PoC 8 Marathon ใช้ `UnsafeLocalCodeExecutor` สำหรับ scripts ที่ bundle มากับ repository;
+  ห้ามโหลด skill หรือ script จากแหล่งที่ไม่เชื่อถือ
+- MCP packages ที่ใช้ `npx -y` จะถูกดาวน์โหลดและรันในเครื่อง ควรตรวจ package และ version
+  ก่อนใช้ใน environment ที่เข้มงวด
+- Function tools ในหลาย PoC คืนค่า mock เพื่อการเรียนรู้ ไม่ใช่ระบบ booking, cart หรือ
+  legal advice จริง
+- Guardrails ใน PoC 7 เป็นตัวอย่าง defense in depth ไม่ใช่ security boundary ที่สมบูรณ์
+
+## Upstream and Credits
+
+- Original fork:
+  [`punsiriboo/adk-mcp-a2a-linebot-mcp-server`](https://github.com/punsiriboo/adk-mcp-a2a-linebot-mcp-server)
+- Workshop slide:
+  [Agent Development Kit (ADK) x MCP x A2A](https://speakerdeck.com/punsiriboo/agent-development-kit-adk-x-mcp-x-a2a)
+- ADK Skills source:
+  [`punsiriboo/adk-skills`](https://github.com/punsiriboo/adk-skills)
+- PoC 8 source revision และ local integration changes:
+  [`8_agent_with_skill/UPSTREAM.md`](8_agent_with_skill/UPSTREAM.md)
+
+สร้างเพื่อเรียนรู้ ทดลอง และเปรียบเทียบรูปแบบการออกแบบ agent แบบลงมือทำจริง

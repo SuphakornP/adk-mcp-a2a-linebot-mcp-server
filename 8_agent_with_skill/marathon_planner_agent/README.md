@@ -1,0 +1,87 @@
+# Building ADK Agents with Skills and Tools: Marathon Planner Agent
+
+This repository contains the source code for the codelab **"Building ADK Agents with Skills and Tools"**, where you build a sophisticated Marathon Planner Agent using the Agent Development Kit (ADK).
+
+The agent progressively demonstrates capabilities such as well-structured system prompts via a prompt builder, dynamic skill loading, and mapping Model Context Protocol (MCP) tools for real-world location context. Finally, it demonstrates how to deploy the agent to the Google Cloud Agent Engine.
+
+## Project Structure
+
+*   `index.lab.md`: The detailed step-by-step instructions for the codelab.
+*   `planner_agent/`: Contains the core code for the ADK agent:
+    *   `agent.py`: The main entry point initializing the agent.
+    *   `prompts.py` / `utils.py`: A prompt builder to construct logical instructions.
+    *   `tools.py`: Tool registry mapping skills and MCP tools.
+    *   `skills/`: Directory containing dynamic skills (like gis-spatial-engineering, mapping, and race-director).
+    *   Root `.env.example`: Environment variable template shared by all PoCs.
+*   `main.py`: A helper Python CLI script to interact with your agent once it is deployed to Google Cloud Agent Engine.
+
+## Prerequisites
+
+*   A Google Cloud project with billing enabled.
+*   Python 3.12+ and pip installed.
+*   A Google Maps API key (for the mapping MCP tools).
+
+## Getting Started
+
+1.  **Set up the Python environment:**
+    ```bash
+    # Run from the repository root
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    ```
+
+2.  **Configure environment variables:**
+    Add `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION`, and
+    `GOOGLE_MAPS_API_KEY` to the repository root `.env`. Use root
+    `.env.example` as the template; do not create an `.env` in this directory.
+
+3.  **Run the agent locally (Terminal):**
+    ```bash
+    adk run 8_agent_with_skill/marathon_planner_agent
+    ```
+
+4.  **Run the agent locally (Web UI):**
+    To see the agent in action with skill loading and tool call visibility:
+    ```bash
+    adk web 8_agent_with_skill
+    ```
+    Access the UI at `http://127.0.0.1:8000`.
+
+ตัวอย่าง prompt ภาษาไทยอยู่ที่ [README หลัก](../README.md#ตัวอย่าง-prompt-ภาษาไทย)
+
+## Deployment
+
+Deploy the agent to the Google Cloud Agent Engine securely:
+
+```bash
+adk deploy agent_engine \
+  --env_file .env \
+  8_agent_with_skill/marathon_planner_agent
+```
+
+## Interacting with the Deployed Agent
+
+After deployment, you can use the provided `main.py` helper script to test the remote agent.
+
+Make sure the repository root `.env` has `GOOGLE_CLOUD_PROJECT` and
+`GOOGLE_CLOUD_LOCATION` configured.
+
+**List deployed agents:**
+```bash
+python main.py list
+```
+
+**Prompt a specific agent:**
+```bash
+export AGENT_ID=<YOUR_AGENT_ID>
+python main.py prompt --agent-id ${AGENT_ID} --message "Plan a marathon for 10000 participants in Las Vegas on April 24, 2027 in the evening timeframe"
+```
+
+**Delete a deployed agent:**
+```bash
+python main.py delete --agent-id ${AGENT_ID}
+```
+
+## Cleanup
+
+To avoid incurring charges, remember to delete the resources created during the codelab. Use the `main.py delete` command to remove deployed agents and delete the Google Cloud Project if necessary.
