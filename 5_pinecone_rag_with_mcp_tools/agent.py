@@ -91,7 +91,7 @@ agent_instruction_prompt = """
 # สร้าง RAG Agent
 # สามารถใช้กับทั้ง CLI และ ADK Web UI
 rag_agent = Agent(
-    model='gemini-2.5-flash',
+    model='gemini-3.8-flash',
     name='sales_knowledge_assistant',
     description="Sales Knowledge Assistant with RAG - ตอบคำถามเกี่ยวกับทักษะการขายและเทคนิคการขาย",
     instruction=agent_instruction_prompt,
