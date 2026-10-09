@@ -4,27 +4,30 @@ RAG Agent with Pinecone MCP Tools
 ใช้ Pinecone index ที่มี integrated embedding สำหรับการค้นหาข้อมูล
 """
 
-from google.adk.agents import Agent
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
-from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
-from mcp import StdioServerParameters
 import os
-from dotenv import load_dotenv
+from pathlib import Path
 
-# Load environment variables
-load_dotenv()
+from dotenv import load_dotenv
+from google.adk.agents import Agent
+from google.adk.tools.mcp_tool import McpToolset
+from google.adk.tools.mcp_tool import StdioConnectionParams
+from mcp import StdioServerParameters
+
+# Load the shared repository configuration regardless of the current directory.
+ROOT_ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(ROOT_ENV_PATH)
 
 # Validate required environment variables
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 if not PINECONE_API_KEY:
-    print("⚠️  Warning: PINECONE_API_KEY not set in .env file")
-    print("Pinecone MCP toolset will not be available.")
-    exit(1)
+    raise ValueError(
+        f"PINECONE_API_KEY is required in the repository .env file: {ROOT_ENV_PATH}"
+    )
 
 # ตั้งค่า Pinecone MCP Toolset
 # ใช้ Official Pinecone MCP server
-pinecone_mcp_toolset = MCPToolset(
+pinecone_mcp_toolset = McpToolset(
     connection_params=StdioConnectionParams(
         server_params=StdioServerParameters(
             command="npx",
@@ -57,7 +60,7 @@ agent_instruction_prompt = """
    - ค้นหา top 5-10 ผลลัพธ์
    - ส่ง query เป็น text โดยตรง (ไม่ต้องสร้าง embedding เอง!)
    - ตัวอย่าง: search_records(name="test-rag-integrated", namespace="", query={"topK": 5, "inputs": {"text": "คำถามของผู้ใช้"}})
-   
+
 2. อ่านและวิเคราะห์ข้อมูลที่ได้จากการค้นหา
 
 3. สังเคราะห์คำตอบที่:
@@ -91,8 +94,8 @@ agent_instruction_prompt = """
 # สร้าง RAG Agent
 # สามารถใช้กับทั้ง CLI และ ADK Web UI
 rag_agent = Agent(
-    model='gemini-3.8-flash',
-    name='sales_knowledge_assistant',
+    model="gemini-3.8-flash",
+    name="sales_knowledge_assistant",
     description="Sales Knowledge Assistant with RAG - ตอบคำถามเกี่ยวกับทักษะการขายและเทคนิคการขาย",
     instruction=agent_instruction_prompt,
     tools=[pinecone_mcp_toolset],
@@ -100,43 +103,3 @@ rag_agent = Agent(
 
 # Alias สำหรับ ADK Web UI (ต้องมี root_agent)
 root_agent = rag_agent
-
-def main():
-    """Main function สำหรับทดสอบ agent"""
-    print("=" * 80)
-    print("🤖 Sales Knowledge Assistant (RAG)")
-    print("=" * 80)
-    print("พิมพ์ 'exit' หรือ 'quit' เพื่อออก\n")
-    
-    while True:
-        try:
-            user_input = input("\n💬 คำถาม: ").strip()
-            
-            if not user_input:
-                continue
-                
-            if user_input.lower() in ['exit', 'quit', 'ออก']:
-                print("\n👋 ขอบคุณที่ใช้บริการ!")
-                break
-            
-            print("\n🤔 กำลังค้นหาและวิเคราะห์ข้อมูล...\n")
-            
-            # ส่งคำถามไปยัง agent
-            response = rag_agent.run(user_input)
-            
-            print("─" * 80)
-            print("🤖 คำตอบ:")
-            print("─" * 80)
-            print(response.text)
-            print("─" * 80)
-            
-        except KeyboardInterrupt:
-            print("\n\n👋 ขอบคุณที่ใช้บริการ!")
-            break
-        except Exception as e:
-            print(f"\n❌ เกิดข้อผิดพลาด: {str(e)}")
-            import traceback
-            traceback.print_exc()
-
-if __name__ == "__main__":
-    main()

@@ -121,7 +121,8 @@ def main():
         print("\n📖 Next steps:")
         print("   1. ใส่ข้อมูล sample ใน sample_data/")
         print("   2. รัน: python ingest_data.py")
-        print("   3. รัน: python agent.py")
+        print("   3. จาก repository root รัน:")
+        print("      adk run 5_pinecone_rag_with_mcp_tools/pinecone_rag_agent")
         
     except Exception as e:
         print("\n" + "=" * 80)

@@ -151,30 +151,19 @@ MODEL_ID=gemini-2.5-flash
 
 ### Interactive CLI
 
-`adk run` เหมาะสำหรับเปิด agent เดี่ยวจาก root:
-
-```bash
-adk run 1_basic_agent
-adk run 2_agent_with_mcp_tools
-adk run 3_multi_agents
-adk run 5_pinecone_rag_with_mcp_tools
-adk run 6_basic_agent_litellm
-adk run 7_agent_litellm_response_openai
-```
-
-รันทีละคำสั่งตาม PoC ที่ต้องการ ไม่จำเป็นต้องเปิดทั้งหมดพร้อมกัน
+ADK 1.35+ บังคับให้ `App.name` เป็น Python identifier แต่โฟลเดอร์ legacy ของ
+PoC 1-7 ขึ้นต้นด้วยตัวเลข จึงไม่ควรส่งชื่อโฟลเดอร์เหล่านั้นให้ `adk run` โดยตรง
+PoC 5 มี valid child app พร้อมใช้ตามคำสั่งในหัวข้อ Pinecone RAG ด้านล่าง ส่วน
+PoC 1, 2, 3, 6 และ 7 ต้องเพิ่ม valid child app หรือเปลี่ยนชื่อก่อนใช้กับ ADK รุ่นนี้
 
 ### ADK Web
 
-สำหรับ top-level agents ให้เปิด root เป็น agents directory:
+คำสั่งต่อไปนี้ใช้ดูรายการ directory ได้ แต่ไม่ควรเลือกโฟลเดอร์ PoC ที่ขึ้นต้นด้วย
+ตัวเลข เพราะจะเกิด `Invalid app name`:
 
 ```bash
 adk web .
 ```
-
-จากนั้นเลือก `1_basic_agent`, `2_agent_with_mcp_tools`, `3_multi_agents`,
-`5_pinecone_rag_with_mcp_tools`, `6_basic_agent_litellm` หรือ
-`7_agent_litellm_response_openai` ตามค่าที่ตั้งไว้ใน `.env`
 
 ADK อาจแสดง directory อื่นที่ root ซึ่งไม่ใช่ agent เช่น `images` หรือ
 `8_agent_with_skill`; อย่าเลือก directory เหล่านั้นจาก server ชุดนี้ และเปิด PoC 8
@@ -194,14 +183,34 @@ adk web 8_agent_with_skill
 
 เตรียม index และ sample data ก่อนเปิด agent ครั้งแรก:
 
+PoC 5 ใช้ virtual environment ของตัวเอง เนื่องจาก `McpToolset` กับ endpoint
+`app-info` มี incompatibility ใน ADK 1.x แต่แก้แล้วใน ADK 2.x:
+
+```bash
+python3 -m venv 5_pinecone_rag_with_mcp_tools/.venv
+source 5_pinecone_rag_with_mcp_tools/.venv/bin/activate
+python -m pip install -r 5_pinecone_rag_with_mcp_tools/requirements.txt
+```
+
 > `create_index.py` ใช้ชื่อ index `test-rag-integrated` และอาจเสนอให้ลบ/recreate
 > index เดิม ควรตรวจ account, project และชื่อ index ให้ถูกต้องก่อนยืนยัน
 
 ```bash
 python 5_pinecone_rag_with_mcp_tools/create_index.py
 python 5_pinecone_rag_with_mcp_tools/ingest_data.py
-adk run 5_pinecone_rag_with_mcp_tools
+adk run 5_pinecone_rag_with_mcp_tools/pinecone_rag_agent
 ```
+
+สำหรับ Web UI ให้เปิดโฟลเดอร์ PoC 5 เป็น agents directory เพื่อให้ ADK ใช้ชื่อ
+`pinecone_rag_agent` ซึ่งเป็น Python identifier ที่ถูกต้อง:
+
+```bash
+adk web 5_pinecone_rag_with_mcp_tools
+```
+
+เปิด `http://127.0.0.1:8000` แล้วเลือก `pinecone_rag_agent` อย่าเลือกชื่อ
+โฟลเดอร์ที่ขึ้นต้นด้วยตัวเลขจาก `adk web .` เพราะ ADK 1.35+ ไม่ยอมรับชื่อดังกล่าว
+เป็น `App.name`
 
 ### A2A
 

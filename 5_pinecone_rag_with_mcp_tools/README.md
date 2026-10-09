@@ -68,13 +68,14 @@ pip install -r requirements.txt
 python3 create_index.py
 python3 ingest_data.py
 
-# 5. ทดสอบ RAG agent
+# 5. กลับไปที่ root แล้วทดสอบ RAG agent
+cd ..
+
 # CLI version:
-python3 agent.py
+adk run 5_pinecone_rag_with_mcp_tools/pinecone_rag_agent
 
 # หรือ Web UI (แนะนำ):
-cd ..
-adk web 5_pinecone_rag_with_mcp_tools.agent:rag_agent
+adk web 5_pinecone_rag_with_mcp_tools
 ```
 
 ## 🔧 Setup (รายละเอียด)
@@ -102,6 +103,7 @@ pip install -r requirements.txt
 
 **หมายเหตุ**: 
 - ✅ POC นี้มี `requirements.txt` ของตัวเอง (self-contained)
+- ✅ ใช้ virtual environment ของ PoC นี้แยกจาก root เพราะ MCP Web UI ต้องใช้ `google-adk` 2.x
 - ✅ รวม `google-adk`, `pinecone-client`, และ `python-dotenv` แล้ว
 - ✅ ไม่ต้องติดตั้ง `openai` เพราะใช้ Pinecone integrated embedding!
 
@@ -150,21 +152,19 @@ python3 ingest_data.py
 #### วิธีที่ 1: รันแบบ CLI (Command Line)
 
 ```bash
-# ตรวจสอบว่า activate .venv แล้ว
-python3 agent.py
+# รันจาก repository root
+adk run 5_pinecone_rag_with_mcp_tools/pinecone_rag_agent
 ```
 
 #### วิธีที่ 2: รันแบบ Web UI (แนะนำ!) 🌐
 
 ```bash
-# ออกจาก folder ไปที่ root
-cd ..
-
-# รัน ADK Web UI
-adk web 5_pinecone_rag_with_mcp_tools.agent:rag_agent
+# รันจาก repository root โดยให้ PoC 5 เป็น agents directory
+adk web 5_pinecone_rag_with_mcp_tools
 ```
 
-จากนั้นเปิดเบราว์เซอร์ที่ `http://localhost:8000`
+จากนั้นเปิดเบราว์เซอร์ที่ `http://localhost:8000` และเลือก
+`pinecone_rag_agent`
 
 **ข้อดีของ Web UI:**
 - ✅ UI สวยงาม ใช้งานง่าย
@@ -186,7 +186,9 @@ Agent จะ:
 ├── .gitignore               # Git ignore rules
 ├── requirements.txt         # ✨ Dependencies (self-contained)
 ├── __init__.py              # Package initialization
-├── agent.py                 # ✨ RAG agent (รองรับทั้ง CLI และ Web UI)
+├── pinecone_rag_agent/      # ชื่อ app ที่ผ่าน ADK validation
+│   ├── __init__.py          # ADK package entry point
+│   └── agent.py             # ✨ RAG agent สำหรับ CLI และ Web UI
 ├── create_index.py          # สร้าง Pinecone index (integrated embedding)
 ├── ingest_data.py           # Chunk และ upsert data (ไม่ต้องสร้าง embedding!)
 ├── README.md                # เอกสารนี้
@@ -277,7 +279,7 @@ CHUNK_OVERLAP = 50    # overlap ระหว่าง chunk
 
 ### ปรับแต่ง Search Parameters
 
-แก้ไขใน `agent.py` (instruction prompt):
+แก้ไขใน `pinecone_rag_agent/agent.py` (instruction prompt):
 ```python
 # เปลี่ยนจำนวนผลลัพธ์ที่ค้นหา
 "ค้นหา top 5-10 ผลลัพธ์"  # → เปลี่ยนเป็น top 3, 15, etc.
@@ -300,6 +302,11 @@ source .venv/bin/activate  # macOS/Linux
 - ตรวจสอบว่าใส่ API key ถูกต้อง
 - ตรวจสอบว่า activate .venv แล้ว
 
+### ❌ "API key not valid" จาก Generative Language API
+- ตรวจสอบ `GEMINI_API_KEY` ใน root `.env`; error นี้หมายถึง Gemini ปฏิเสธ key ก่อนเรียก RAG tool
+- ถ้า key ถูกจำกัดการใช้งาน ให้ตรวจว่าอนุญาต Generative Language API และยังไม่ถูก revoke
+- หลังแก้ `.env` ให้หยุด ADK Web แล้วเปิดใหม่ เพื่อให้ process โหลดค่าใหม่
+
 ### ❌ "Module not found"
 ```bash
 # ตรวจสอบว่าติดตั้ง dependencies แล้ว
@@ -320,8 +327,13 @@ pip install -r requirements.txt
 - ตรวจสอบว่ามีข้อมูลใน index: ดูที่ Pinecone console
 
 ### ❌ MCP connection errors
-- ตรวจสอบว่าติดตั้ง `@pinecone-database/mcp-server`
-- ลอง: `npx -y @pinecone-database/mcp-server --version`
+- ตรวจสอบว่า Node.js และ `npx` พร้อมใช้งาน
+- ลอง: `npx -y @pinecone-database/mcp --help`
+
+### ❌ "Invalid app name '5_pinecone_rag_with_mcp_tools'"
+- เกิดจากการเปิด root ด้วย `adk web .` แล้วเลือกโฟลเดอร์ที่ขึ้นต้นด้วยตัวเลข
+- หยุด server เดิม แล้วรัน `adk web 5_pinecone_rag_with_mcp_tools`
+- เลือก `pinecone_rag_agent` และสร้าง session ใหม่
 
 ## 📚 Additional Resources
 

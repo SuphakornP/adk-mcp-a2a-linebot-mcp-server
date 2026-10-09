@@ -235,7 +235,8 @@ def main():
         print("✅ Data ingestion completed successfully!")
         print("=" * 80)
         print("\n📖 Next step:")
-        print("   รัน: python agent.py เพื่อทดสอบ RAG chat")
+        print("   จาก repository root รัน:")
+        print("   adk run 5_pinecone_rag_with_mcp_tools/pinecone_rag_agent")
         
     except Exception as e:
         print(f"\n❌ Error: {str(e)}")

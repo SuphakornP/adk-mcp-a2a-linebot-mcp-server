@@ -1,6 +1,5 @@
 # Google ADK - Agent Development Kit
-google-adk==1.14.1
-google-adk[a2a]
+google-adk[mcp]==2.10.0
 
 # Environment Variables
 python-dotenv==1.1.0
